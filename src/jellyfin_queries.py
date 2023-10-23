@@ -1,3 +1,4 @@
+import os
 import copy
 from datetime import datetime
 import dateutil.parser as parser
@@ -74,17 +75,11 @@ def query_items(client=None, userId=None, limit=100, startIndex=0, includeItemTy
 def get_items(client=None, userId=None, includeItemTypes=('Episode')):
     if client is None:
         return []
-    limit = 5000
+    limit = os.environ['QUERY_LIMIT'] if 'QUERY_LIMIT' in os.environ else 5000
     items = []
     startIndex = 0
     previousCount = -1
-    # while previousCount != 0:
-    #     newItems = query_items(client=client, userId=userId, limit=limit, startIndex=startIndex, includeItemTypes=includeItemTypes)
-    #     previousCount = len(newItems)
-    #     print(includeItemTypes, '+=', previousCount)
-    #     startIndex += previousCount
-    #     if newItems:
-    #         items.extend(newItems)
+
     while previousCount != 0:
         newItems = query_items(client=client, userId=userId, limit=limit, startIndex=startIndex, includeItemTypes=includeItemTypes)
         previousCount = len(newItems)
