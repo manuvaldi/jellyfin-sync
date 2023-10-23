@@ -1,4 +1,6 @@
 import copy
+from datetime import datetime
+import dateutil.parser as parser
 from jellyfin_api_client import jellyfin_login, jellyfin_logout
 
 
@@ -22,7 +24,7 @@ def get_user_id(client=None, username=''):
 def query_items(client=None, userId=None, limit=100, startIndex=0, includeItemTypes=('Episode'), fields=('ProviderIds', 'UserData')):
     if client is None:
         return []
-    
+
     if userId is None:
         return []
 
@@ -38,7 +40,7 @@ def query_items(client=None, userId=None, limit=100, startIndex=0, includeItemTy
     StartIndex=0
     Limit=100
     '''
-        
+
     try:
         result = client.jellyfin.items(params={
             'UserId': userId,
@@ -55,6 +57,7 @@ def query_items(client=None, userId=None, limit=100, startIndex=0, includeItemTy
 
         if 'Items' in result and result['Items']:
             for item in result['Items']:
+                # if item['UserData']['Played'] or item['Id'] == result['Items'][0]['Id']:
                 newItem = {}
                 newItem['Name'] = item['Name']
                 newItem['Id'] = item['Id']
@@ -71,17 +74,25 @@ def query_items(client=None, userId=None, limit=100, startIndex=0, includeItemTy
 def get_items(client=None, userId=None, includeItemTypes=('Episode')):
     if client is None:
         return []
-    
+    limit = 5000
     items = []
     startIndex = 0
     previousCount = -1
+    # while previousCount != 0:
+    #     newItems = query_items(client=client, userId=userId, limit=limit, startIndex=startIndex, includeItemTypes=includeItemTypes)
+    #     previousCount = len(newItems)
+    #     print(includeItemTypes, '+=', previousCount)
+    #     startIndex += previousCount
+    #     if newItems:
+    #         items.extend(newItems)
     while previousCount != 0:
-        newItems = query_items(client=client, userId=userId, limit=100, startIndex=startIndex, includeItemTypes=includeItemTypes)
+        newItems = query_items(client=client, userId=userId, limit=limit, startIndex=startIndex, includeItemTypes=includeItemTypes)
         previousCount = len(newItems)
         print(includeItemTypes, '+=', previousCount)
         startIndex += previousCount
         if newItems:
             items.extend(newItems)
+
     return items
 
 
@@ -96,15 +107,40 @@ def get_movies(client=None, userId=None):
 def update_item(client, userId, matchedItem, data_item):
     if matchedItem is None or data_item is None or client is None:
         return
+    # print("Updating Item: " + str(data_item['Id']) + " - " + data_item['Name'])
+
     if data_item['UserData']['Played'] is True and matchedItem['UserData']['Played'] is False:
         request_for_user(client, userId, '%s/%s' % ('PlayedItems', matchedItem['Id']))
+        print(" Updated played "+ str(data_item['Id']) + " - " + data_item['Name'])
+
+    if data_item['UserData']['PlaybackPositionTicks'] != matchedItem['UserData']['PlaybackPositionTicks']:
+        print("ticks de: " + data_item['Name'])
+        if 'LastPlayedDate' in data_item['UserData'].keys():
+            date1 = datetime.timestamp(parser.parse(data_item['UserData']['LastPlayedDate']))
+        else:
+            date1 = 0
+
+        if 'LastPlayedDate' in matchedItem['UserData'].keys():
+            date2 = datetime.timestamp(parser.parse(matchedItem['UserData']['LastPlayedDate']))
+        else:
+            date2 = 0
+        if date1 > date2:
+            request_for_user_playing(client, userId, matchedItem['Id'], data_item['UserData']['PlaybackPositionTicks'] )
+            print(" Updated position ticks "+ str(data_item['Id']) + " - " + data_item['Name'])
+
     if data_item['UserData']['IsFavorite'] is True:
         request_for_user(client, userId, '%s/%s' % ('FavoriteItems', matchedItem['Id']))
+        print(" Updated favorite "+ str(data_item['Id']) + " - " + data_item['Name'])
 
 
 def request_for_user(client, userId, path, json=None, params=None):
     client.jellyfin._post("Users/%s/%s" % (userId, path), json=json, params=params)
 
+def request_for_user_playing(client, userId, id, ticks):
+    new_item = {}
+    new_item['PositionTicks'] = ticks
+    client.jellyfin._delete("Users/%s/PlayedItems/%s" % (userId, id), params=None)
+    client.jellyfin._delete("Users/%s/PlayingItems/%s" % (userId, id), params=new_item)
 
 def query_jellyfin(username='', server_url='', server_username='', server_password=''):
     if username == '' or server_url == '' or server_username == '' or server_password == '':
