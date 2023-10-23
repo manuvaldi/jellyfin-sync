@@ -24,6 +24,6 @@ python src/sync.py \
 --username2 usertwo --jellyfin_url2 http://server2.example.com:8080 --jellyfin_username2 usertwo --jellyfin_password2 YYYYYYY
 ```
 
-## Aditional environment variables 
+## Aditional environment variables
 
 `QUERY_LIMIT`: set the query size to the server, by default is 5000.

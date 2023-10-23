@@ -55,7 +55,7 @@ def sync_items(orig, dest, client, userId, matched_items, log_file):
     # Loop over source Items
     for data_item in orig['Items']:
         # Only played of playing items
-        if data_item['UserData']['Played'] or data_item['UserData']['PlaybackPositionTicks'] > 0:
+        if data_item['UserData']['Played'] or data_item['UserData']['PlaybackPositionTicks'] > 0 or data_item['UserData']['IsFavorite']:
             matchedItem = None
             # Check by Providers (IMDB, etc)
             if len(data_item['ProviderIds'].keys()) > 0:

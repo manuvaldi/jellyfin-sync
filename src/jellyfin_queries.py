@@ -118,7 +118,7 @@ def update_item(client, userId, matchedItem, data_item):
             date2 = datetime.timestamp(parser.parse(matchedItem['UserData']['LastPlayedDate']))
         else:
             date2 = 0
-            
+
         if date1 > date2:
             request_for_user_playing(client, userId, matchedItem['Id'], data_item['UserData']['PlaybackPositionTicks'] )
             print(" Updated position ticks "+ str(data_item['Id']) + " - " + data_item['Name'])
@@ -147,10 +147,12 @@ def query_jellyfin(username='', server_url='', server_username='', server_passwo
     items = {}
     items['User'] = username
     items['Items'] = []
-    episodes = get_episodes(client, userId)
-    movies = get_movies(client, userId)
+    episodes = get_items(client=client, userId=userId, includeItemTypes=('Episode'))
     items['Items'].extend(episodes)
+    movies = get_items(client=client, userId=userId, includeItemTypes=('Movie'))
     items['Items'].extend(movies)
-    print('user %s has %s episodes, %s movies' % (username, len(episodes), len(movies)))
+    series = get_items(client=client, userId=userId, includeItemTypes=('Series'))
+    items['Items'].extend(series)
+    print('user %s has %s episodes, %s movies, %s series' % (username, len(episodes), len(movies), len(series)))
     jellyfin_logout()
     return items
