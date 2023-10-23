@@ -109,7 +109,6 @@ def update_item(client, userId, matchedItem, data_item):
         print(" Updated played "+ str(data_item['Id']) + " - " + data_item['Name'])
 
     if data_item['UserData']['PlaybackPositionTicks'] != matchedItem['UserData']['PlaybackPositionTicks']:
-        print("ticks de: " + data_item['Name'])
         if 'LastPlayedDate' in data_item['UserData'].keys():
             date1 = datetime.timestamp(parser.parse(data_item['UserData']['LastPlayedDate']))
         else:
@@ -119,6 +118,7 @@ def update_item(client, userId, matchedItem, data_item):
             date2 = datetime.timestamp(parser.parse(matchedItem['UserData']['LastPlayedDate']))
         else:
             date2 = 0
+            
         if date1 > date2:
             request_for_user_playing(client, userId, matchedItem['Id'], data_item['UserData']['PlaybackPositionTicks'] )
             print(" Updated position ticks "+ str(data_item['Id']) + " - " + data_item['Name'])
