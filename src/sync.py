@@ -96,8 +96,8 @@ def import_and_sync(username1, server_url1, server_username1, server_password1,
     items1 = jellyfin_queries.query_jellyfin(username1, server_url1, server_username1, server_password1)
     items2 = jellyfin_queries.query_jellyfin(username2, server_url2, server_username2, server_password2)
 
-    client1 = jellyfin_login(server_url1, server_username1, server_password1, "Jelly Find")
-    client2 = jellyfin_login(server_url2, server_username2, server_password2, "Jelly Find")
+    client1 = jellyfin_login(server_url1, server_username1, server_password1, "Jelly Find 1")
+    client2 = jellyfin_login(server_url2, server_username2, server_password2, "Jelly Find 2")
 
     userId1 = jellyfin_queries.get_user_id(client1, username1)
     userId2 = jellyfin_queries.get_user_id(client2, username2)

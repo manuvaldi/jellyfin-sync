@@ -20,15 +20,12 @@ from jellyfin_apiclient_python.connection_manager import CONNECTION_STATE
 from getpass import getpass
 from typing import Optional
 
-# server_url = os.environ['JELLYFIN_URL']
-# server_username = os.environ['JELLYFIN_USERNAME']
-# server_password = os.environ['JELLYFIN_PASSWORD']
 
 jellyfin_client_manager = None
 jellyfin_current_client = None
 
-global_app_name = "jelly-jar"
-global_user_app_name = "Jelly Jar"
+global_app_name = "jellfin-sync"
+global_user_app_name = "Jellyfin Sync"
 
 CLIENT_VERSION = "0.0.1"
 USER_AGENT = "%s/%s" % (global_user_app_name, CLIENT_VERSION)
@@ -92,12 +89,12 @@ class ClientManager(object):
     @staticmethod
     def client_factory():
         uuid = str(UUID.uuid4())
-        if Path(config_path / (global_app_name + '-uuid.txt')).exists():
-            with Path(config_path / (global_app_name + '-uuid.txt')).open('r') as uuid_file:
-                uuid = uuid_file.read()
-        else:
-            with Path(config_path / (global_app_name + '-uuid.txt')).open('w+') as uuid_file:
-                uuid_file.write(uuid)
+        # if Path(config_path / (global_app_name + '-uuid.txt')).exists():
+        #     with Path(config_path / (global_app_name + '-uuid.txt')).open('r') as uuid_file:
+        #         uuid = uuid_file.read()
+        # else:
+        #     with Path(config_path / (global_app_name + '-uuid.txt')).open('w+') as uuid_file:
+        #         uuid_file.write(uuid)
         client = JellyfinClient(allow_multiple_clients=True)
         client.config.data["app.default"] = True
         client.config.app(
@@ -152,7 +149,7 @@ class ClientManager(object):
     ):
         if server.endswith("/"):
             server = server[:-1]
-        
+
         protocol, host, port, path = path_regex.match(server).groups()
 
         if not protocol:
@@ -190,7 +187,7 @@ class ClientManager(object):
     def setup_client(self, client: "JellyfinClient", server):
         def event(event_name, data):
             if event_name == "WebSocketDisconnect":
-                timeout_gen = expo(100)
+                timeout_gen = expo(300)
                 if server["uuid"] in self.clients:
                     while not self.is_stopping:
                         timeout = next(timeout_gen)

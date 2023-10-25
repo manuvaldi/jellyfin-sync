@@ -144,7 +144,7 @@ def query_jellyfin(username='', server_url='', server_username='', server_passwo
         print('missing server info')
         return
 
-    client = jellyfin_login(server_url, server_username, server_password, "Jelly Find")
+    client = jellyfin_login(server_url, server_username, server_password, "Jelly Find " + server_url)
     userId = get_user_id(client, username)
     items = {}
     items['User'] = username
