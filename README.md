@@ -1,6 +1,6 @@
 # jelly-sync
 
-Sync played, favorites and playing between 2 servers. The synchronization is bidirectional
+Sync favorites, played, and playing between 2 servers. The synchronization is bidirectional
 
 
 

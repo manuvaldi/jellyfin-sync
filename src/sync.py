@@ -2,10 +2,7 @@ import os
 import re
 import sys
 import getopt
-
 import jellyfin_queries
-import json
-
 from pathlib import Path
 from datetime import datetime
 
@@ -48,8 +45,8 @@ def sync_jellyfins(items1, items2, client1, client2, userId1, userId2, log_file)
     print("Syncing <-")
     matched_items = sync_items(items2, items1, client1, userId1, matched_items, log_file)
 
-
     print_debug(a=["matched %d items" % matched_items], log_file=log_file)
+
 
 def sync_items(orig, dest, client, userId, matched_items, log_file):
     # Loop over source Items
@@ -60,7 +57,7 @@ def sync_items(orig, dest, client, userId, matched_items, log_file):
             # Check by Providers (IMDB, etc)
             if len(data_item['ProviderIds'].keys()) > 0:
                 for item in dest['Items']:
-                    #Check by providers
+                    # Check by providers
                     failed_provider = 0
                     for provider in data_item['ProviderIds'].keys():
                         if provider in item['ProviderIds'] and data_item['ProviderIds'][provider] == item['ProviderIds'][provider]:
@@ -105,7 +102,7 @@ def import_and_sync(username1, server_url1, server_username1, server_password1,
     userId1 = jellyfin_queries.get_user_id(client1, username1)
     userId2 = jellyfin_queries.get_user_id(client2, username2)
 
-    sync_jellyfins(items1,items2,client1,client2,userId1,userId2,log_file)
+    sync_jellyfins(items1, items2, client1, client2, userId1, userId2, log_file)
     jellyfin_logout()
     end = datetime.now()
     print_debug(a=["total runtime: " + str(end - start)], log_file=log_file)
@@ -117,8 +114,9 @@ def main(argv):
     backup_path = ''
 
     try:
-        opts, args = getopt.getopt(argv, "hl", ["help", "log", "username1=", "jellyfin_url1=", "jellyfin_username1=", "jellyfin_password1=",
-                                                                "username2=", "jellyfin_url2=", "jellyfin_username2=", "jellyfin_password2="])
+        opts, args = getopt.getopt(argv, "hl", ["help", "log",
+                                                "username1=", "jellyfin_url1=", "jellyfin_username1=", "jellyfin_password1=",
+                                                "username2=", "jellyfin_url2=", "jellyfin_username2=", "jellyfin_password2="])
     except getopt.GetoptError:
         print_debug(['sync.py -u username -j backup file -l (log to file)'])
         sys.exit(2)
@@ -160,6 +158,7 @@ def main(argv):
 
     import_and_sync(username1, server_url1, server_username1, server_password1,
                     username2, server_url2, server_username2, server_password2, log_file)
+
 
 if __name__ == "__main__":
     main(sys.argv[1:])

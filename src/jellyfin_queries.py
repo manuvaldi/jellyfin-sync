@@ -106,7 +106,7 @@ def update_item(client, userId, matchedItem, data_item):
 
     if data_item['UserData']['Played'] is True and matchedItem['UserData']['Played'] is False:
         request_for_user(client, userId, '%s/%s' % ('PlayedItems', matchedItem['Id']))
-        print(" Updated played "+ str(data_item['Id']) + " - " + data_item['Name'])
+        print(" Updated played " + str(data_item['Id']) + " - " + data_item['Name'])
 
     if data_item['UserData']['PlaybackPositionTicks'] != matchedItem['UserData']['PlaybackPositionTicks']:
         if 'LastPlayedDate' in data_item['UserData'].keys():
@@ -120,22 +120,24 @@ def update_item(client, userId, matchedItem, data_item):
             date2 = 0
 
         if date1 > date2:
-            request_for_user_playing(client, userId, matchedItem['Id'], data_item['UserData']['PlaybackPositionTicks'] )
-            print(" Updated position ticks "+ str(data_item['Id']) + " - " + data_item['Name'])
+            request_for_user_playing(client, userId, matchedItem['Id'], data_item['UserData']['PlaybackPositionTicks'])
+            print(" Updated position ticks " + str(data_item['Id']) + " - " + data_item['Name'])
 
     if data_item['UserData']['IsFavorite'] is True:
         request_for_user(client, userId, '%s/%s' % ('FavoriteItems', matchedItem['Id']))
-        print(" Updated favorite "+ str(data_item['Id']) + " - " + data_item['Name'])
+        print(" Updated favorite " + str(data_item['Id']) + " - " + data_item['Name'])
 
 
 def request_for_user(client, userId, path, json=None, params=None):
     client.jellyfin._post("Users/%s/%s" % (userId, path), json=json, params=params)
+
 
 def request_for_user_playing(client, userId, id, ticks):
     new_item = {}
     new_item['PositionTicks'] = ticks
     client.jellyfin._delete("Users/%s/PlayedItems/%s" % (userId, id), params=None)
     client.jellyfin._delete("Users/%s/PlayingItems/%s" % (userId, id), params=new_item)
+
 
 def query_jellyfin(username='', server_url='', server_username='', server_password=''):
     if username == '' or server_url == '' or server_username == '' or server_password == '':
