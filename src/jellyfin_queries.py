@@ -22,7 +22,7 @@ def get_user_id(client=None, username=''):
     return ''
 
 
-def query_items(client=None, userId=None, limit=100, startIndex=0, includeItemTypes=('Episode'), fields=('ProviderIds', 'UserData')):
+def query_items(client=None, userId=None, limit=100, startIndex=0, includeItemTypes=('Episode'), fields=('ProviderIds', 'UserData'), ids=''):
     if client is None:
         return []
 
@@ -53,6 +53,7 @@ def query_items(client=None, userId=None, limit=100, startIndex=0, includeItemTy
             'enableUserData': True,
             'Fields': fields,
             'Limit': limit,
+            'ids': ids,
             'StartIndex': startIndex
         })
 
@@ -72,7 +73,7 @@ def query_items(client=None, userId=None, limit=100, startIndex=0, includeItemTy
     return items
 
 
-def get_items(client=None, userId=None, includeItemTypes=('Episode')):
+def get_items(client=None, userId=None, includeItemTypes=('Episode'), ids=''):
     if client is None:
         return []
     limit = os.environ['QUERY_LIMIT'] if 'QUERY_LIMIT' in os.environ else 5000
@@ -81,7 +82,7 @@ def get_items(client=None, userId=None, includeItemTypes=('Episode')):
     previousCount = -1
 
     while previousCount != 0:
-        newItems = query_items(client=client, userId=userId, limit=limit, startIndex=startIndex, includeItemTypes=includeItemTypes)
+        newItems = query_items(client=client, userId=userId, limit=limit, startIndex=startIndex, includeItemTypes=includeItemTypes, ids=ids)
         previousCount = len(newItems)
         print(includeItemTypes, '+=', previousCount)
         startIndex += previousCount
@@ -91,12 +92,12 @@ def get_items(client=None, userId=None, includeItemTypes=('Episode')):
     return items
 
 
-def get_episodes(client=None, userId=None):
-    return get_items(client=client, userId=userId, includeItemTypes=('Episode'))
-
-
-def get_movies(client=None, userId=None):
-    return get_items(client=client, userId=userId, includeItemTypes=('Movie'))
+# def get_episodes(client=None, userId=None, ids=''):
+#     return get_items(client=client, userId=userId, includeItemTypes=('Episode'), ids=ids)
+#
+#
+# def get_movies(client=None, userId=None, ids=''):
+#     return get_items(client=client, userId=userId, includeItemTypes=('Movie'), ids=ids)
 
 
 def update_item(client, userId, matchedItem, data_item):
@@ -109,6 +110,8 @@ def update_item(client, userId, matchedItem, data_item):
         print(" Updated played " + str(data_item['Id']) + " - " + data_item['Name'])
 
     if data_item['UserData']['PlaybackPositionTicks'] != matchedItem['UserData']['PlaybackPositionTicks']:
+        print(matchedItem)
+        print(data_item)
         if 'LastPlayedDate' in data_item['UserData'].keys():
             date1 = datetime.timestamp(parser.parse(data_item['UserData']['LastPlayedDate']))
         else:
@@ -119,7 +122,7 @@ def update_item(client, userId, matchedItem, data_item):
         else:
             date2 = 0
 
-        if date1 > date2:
+        if date1 >= date2 and data_item['UserData']['PlaybackPositionTicks'] > matchedItem['UserData']['PlaybackPositionTicks']:
             request_for_user_playing(client, userId, matchedItem['Id'], data_item['UserData']['PlaybackPositionTicks'])
             print(" Updated position ticks " + str(data_item['Id']) + " - " + data_item['Name'])
 
@@ -139,7 +142,7 @@ def request_for_user_playing(client, userId, id, ticks):
     client.jellyfin._delete("Users/%s/PlayingItems/%s" % (userId, id), params=new_item)
 
 
-def query_jellyfin(username='', server_url='', server_username='', server_password=''):
+def query_jellyfin(username='', server_url='', server_username='', server_password='', ids=''):
     if username == '' or server_url == '' or server_username == '' or server_password == '':
         print('missing server info')
         return
@@ -149,11 +152,11 @@ def query_jellyfin(username='', server_url='', server_username='', server_passwo
     items = {}
     items['User'] = username
     items['Items'] = []
-    episodes = get_items(client=client, userId=userId, includeItemTypes=('Episode'))
+    episodes = get_items(client=client, userId=userId, includeItemTypes=('Episode'), ids=ids)
     items['Items'].extend(episodes)
-    movies = get_items(client=client, userId=userId, includeItemTypes=('Movie'))
+    movies = get_items(client=client, userId=userId, includeItemTypes=('Movie'), ids=ids)
     items['Items'].extend(movies)
-    series = get_items(client=client, userId=userId, includeItemTypes=('Series'))
+    series = get_items(client=client, userId=userId, includeItemTypes=('Series'), ids=ids)
     items['Items'].extend(series)
     print('user %s has %s episodes, %s movies, %s series' % (username, len(episodes), len(movies), len(series)))
     jellyfin_logout()

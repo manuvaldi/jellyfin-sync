@@ -55,7 +55,7 @@ def sync_items(orig, dest, client, userId, matched_items, log_file):
         if data_item['UserData']['Played'] or data_item['UserData']['PlaybackPositionTicks'] > 0 or data_item['UserData']['IsFavorite']:
             matchedItem = None
             # Check by Providers (IMDB, etc)
-            if len(data_item['ProviderIds'].keys()) > 0:
+            if 'ProviderIds' in data_item and len(data_item['ProviderIds'].keys()) > 0:
                 for item in dest['Items']:
                     # Check by providers
                     failed_provider = 0
@@ -71,11 +71,11 @@ def sync_items(orig, dest, client, userId, matched_items, log_file):
                         matchedItem = item
                         break
             # Check by Name and Type
-            else:
-                for item in dest['Items']:
-                    if item['Name'] == data_item['Name'] and item['Type'] == data_item['Type']:
-                        matchedItem = item
-                        break
+            # else:
+            #     for item in dest['Items']:
+            #         if item['Name'] == data_item['Name'] and item['Type'] == data_item['Type']:
+            #             matchedItem = item
+            #             break
 
             if matchedItem is not None:
                 matched_items += 1
@@ -93,8 +93,8 @@ def import_and_sync(username1, server_url1, server_username1, server_password1,
     print_debug(a=["\nstarted new session at %s\n" % start])
     print_debug(a=["Syncing [%s] and [%s]\n" % (server_url1, server_url2)])
 
-    items1 = jellyfin_queries.query_jellyfin(username1, server_url1, server_username1, server_password1)
-    items2 = jellyfin_queries.query_jellyfin(username2, server_url2, server_username2, server_password2)
+    items1 = jellyfin_queries.query_jellyfin(username1, server_url1, server_username1, server_password1 )
+    items2 = jellyfin_queries.query_jellyfin(username2, server_url2, server_username2, server_password2 )
 
     client1 = jellyfin_login(server_url1, server_username1, server_password1, "Jelly Find 1")
     client2 = jellyfin_login(server_url2, server_username2, server_password2, "Jelly Find 2")
